@@ -1,0 +1,439 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Caesar!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    <section>
+        <title><type>double **</type> háromszögmátrix</title>
+        <para>
+            Írj egy olyan <function>malloc</function> és <function>free</function>
+            párost használó C programot, amely helyet foglal
+            egy alsó háromszög mátrixnak a szabad tárban!
+        </para>
+        <para>
+            Megoldás videó: <link xlink:href="https://youtu.be/W2UTW6_Kb0Q">https://youtu.be/W2UTW6_Kb0Q</link>
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href="Caesar/tm.c">
+                <filename>bhax/thematic_tutorials/bhax_textbook_IgyNeveldaProgramozod/Caesar/tm.c</filename>
+            </link> 
+        </para>
+        <programlisting language="c"><![CDATA[#include <stdio.h>
+#include <stdlib.h>
+
+int
+main ()
+{
+    int nr = 5; //megadjuk hogy hány soros legyen a mátrixunk
+    double **tm;
+
+    if ((tm = (double **) malloc (nr * sizeof (double *))) == NULL)
+    {
+        return -1;
+    }
+
+    for (int i = 0; i < nr; ++i)
+    {
+        if ((tm[i] = (double *) malloc ((i + 1) * sizeof (double))) == NULL)
+        {
+            return -1;
+        }
+
+    }
+
+    for (int i = 0; i < nr; ++i)
+        for (int j = 0; j < i + 1; ++j)
+            tm[i][j] = i * (i + 1) / 2 + j;
+
+    for (int i = 0; i < nr; ++i)
+    {
+        for (int j = 0; j < i + 1; ++j)
+            printf ("%f, ", tm[i][j]);
+        printf ("\n");
+    }
+
+    tm[3][0] = 42.0;
+    (*(tm + 3))[1] = 43.0;	// mi van, ha itt hiányzik a külső ()
+    *(tm[3] + 2) = 44.0;
+    *(*(tm + 3) + 3) = 45.0;
+
+    for (int i = 0; i < nr; ++i)
+    {
+        for (int j = 0; j < i + 1; ++j)
+            printf ("%f, ", tm[i][j]);
+        printf ("\n");
+    }
+
+    for (int i = 0; i < nr; ++i)
+        free (tm[i]);
+
+    free (tm);
+
+    return 0;
+}]]></programlisting>
+        <figure>
+            <title>A <type>double **</type> háromszögmátrix a memóriában</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="img/doublecscs.png" scale="50" />
+                </imageobject>
+                <textobject>
+                    <phrase>A <type>double **</type> háromszögmátrix a memóriában</phrase>
+                </textobject>
+            </mediaobject>
+        </figure>
+    </section>        
+    <section>
+        <title>C EXOR titkosító</title>
+        <para>
+            Írj egy EXOR titkosítót C-ben!
+        </para>
+<para>
+	<programlisting language="c"><![CDATA[
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+#define MAX_KULCS 100
+#define BUFFER_MERET 256
+
+int  main (int argc, char **argv)
+       {
+
+         char kulcs[MAX_KULCS];
+         char buffer[BUFFER_MERET];
+
+         int kulcs_index = 0;
+         int olvasott_bajtok = 0;
+
+         int kulcs_meret = strlen (argv[1]);
+         strncpy (kulcs, argv[1], MAX_KULCS);
+
+         while ((olvasott_bajtok = read (0, (void *) buffer, BUFFER_MERET)))
+                    {
+
+                     for (int i = 0; i < olvasott_bajtok; ++i)
+                        {
+
+                         buffer[i] = buffer[i] ^ kulcs[kulcs_index];
+                         kulcs_index = (kulcs_index + 1) % kulcs_meret;
+
+                        }
+
+                     write (1, buffer, olvasott_bajtok);
+
+                    }
+                }
+
+
+	}]]></programlisting>
+	</para>
+        <para>
+            Az elején sima <type>include</type>-olás van amiben nincs nagyon semmi különös, azonban az utána lévő sorok jóval érdekesebbek, mert én most először találkozok C-ben <type>define</type> parancsal. Ebben a <type>define</type> parancsban megadjuk a definiálni kívánt, ezesetben <type>MAX_KULCS</type> méretét.
+        </para> 
+<para>
+A <type>main</type> függvénynek két paramétere is lesz, az egyik az <type>argc</type> (argument count), ami megszámolja, hány paraméterrel hívjuk meg a fő függvényt. Emellett a <type>**argv</type> függvény pedig egy olyan pointer ami rámutat egy pointerekből álló tömbre, amiben rámutat <type>char</type> tíípusú változókra.
+</para>
+<para>
+Ezután bevezetünk két <type>char</type> típusú változót, amiben elmentjük a <type>MAX_KULCS</type> és a <type>BUFFER_MERET</type> értékeit. Emeltett meglítem, hogy bevezetünk még két változót <type>kulcs_index</type> néven és egyet <type>olvasott_bajtok</type> néven, amiket nyilván az egyiket a kulcs index elmentésére fogjuk alkalmaznim a másikat pedig az olvasott bájtok számlálására. Még létrehozunk egy <type>kulcs_meret</type> nevű változót ahol elmentjük az <type>argv[1]</type>-nek a hosszát.
+</para>
+<para>
+Ezt követően a <type>while</type> ciluson belül gyakorlatilag <type>"össze exorozzuk"</type> a tiszta szövegfájlt és a kulcsot, és a végeredményt kiiratjuk vele egy fájlba.
+</para>           
+    </section>        
+    <section>
+        <title>Java EXOR titkosító</title>
+        <para>
+            Írj egy EXOR titkosítót Java-ban!
+        </para>
+        <para>
+            Megoldás videó:
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href="https://www.tankonyvtar.hu/hu/tartalom/tkt/javat-tanitok-javat/ch01.html#exor_titkosito">https://www.tankonyvtar.hu/hu/tartalom/tkt/javat-tanitok-javat/ch01.html#exor_titkosito</link>               
+        </para>
+<para>
+<programlisting language="java"><![CDATA[
+   public class titkosito {
+    
+    public titkosito(String kulcsSzöveg,
+            java.io.InputStream bejövő,
+            java.io.OutputStream kimenő)
+            throws java.io.IOException {
+        
+        byte [] kulcs = kulcsSzöveg.getBytes();
+        byte [] buffer = new byte[256];
+        int kulcsIndex = 0;
+        int olvasottBájtok = 0;
+
+        while((olvasottBájtok =
+                bejövőCsatorna.read(buffer)) != -1) {
+            
+            for(int i=0; i<olvasottBájtok; ++i) {
+                
+                buffer[i] = (byte)(buffer[i] ^ kulcs[kulcsIndex]);
+                kulcsIndex = (kulcsIndex+1) % kulcs.length;
+                
+            }
+            
+            kimenőCsatorna.write(buffer, 0, olvasottBájtok); 
+        }
+        
+    }
+    
+    public static void main(String[] args) {
+        
+        try {
+            
+            new ExorTitkosító(args[0], System.in, System.out);
+            
+        } catch(java.io.IOException e) {
+            
+            e.printStackTrace();
+            
+            }
+        }
+    }
+}
+
+]]></programlisting>
+</para>
+		<para>
+Először megadunk egy <type>Class</type>-ot, melyben elsőként a kulcsszöveget,az input és output csatornákat definiáljuk, illetve, hogy eseteg hibát is vissza adhat.
+Ebben a class ban lesz maga a titkosítás végrehajtva.
+		</para>	
+		<para>
+Először is létrhozunk 2 tömbböt: kulcs és buffer. A kulcs tömbbe kerül be maga a kulcs.
+A buffer tömbbe először a beolvasott szöveg kerül,majd ebben jön létre a titkosított szöveg is. Deklarálunk két változót a kulcsindexet és a beolvasott byteok számának változóját.
+Ezután jön egy While ciklus amely addig fut amíg a bufferbe van mit olvasni,és az inputot be is olvassa abba,majd ebben egy fpr ciklus,ebben lesz végrehajtva az XOR művelet mellyel "össze-exorozzuk" a a buffer aktuális karakterét a kulcsal.Ezután léptetjük a kulcsindexet,ezt addig csináljuk amíg a forban léptetett i meg nem egyezik az olvasottbájtok-1 el.
+Végül kiírjuk az outputra a kódolt szöveget.
+		</para>
+		<para>
+Jön a main , amiben megpróbáljuk elindítani a titkosító folyamatot , hogyha nem sikerul a catch megpróbálja elkapni a hibát, majd dob egy hiba üzenetet.
+		</para>
+            
+    </section>        
+    <section xml:id="bhax-textbook-feladatok-caesar.EXOR-toro">
+        <title>C EXOR törő</title>
+        <para>
+            Írj egy olyan C programot, amely megtöri az első feladatban előállított titkos szövegeket!
+        </para>
+	<para>
+Az exor törő gyakorlatilag úgy működik, hogy mégegyszer ráengedjük az exor titkosítót az ezesetben már titikos szövegre és visszakajuk az eredeti szöveget.
+	</para>
+    </section>        
+<section>
+        <title>Neurális OR, AND és EXOR kapu</title>
+        <para>
+            R
+        </para>
+        <para>
+            Megoldás videó: <link xlink:href="https://youtu.be/Koyw6IH5ScQ">https://youtu.be/Koyw6IH5ScQ</link>
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href="https://gitlab.com/nbatfai/bhax/tree/master/attention_raising/NN_R">https://gitlab.com/nbatfai/bhax/tree/master/attention_raising/NN_R</link>               
+        </para>
+<para>
+Ebben a feladatban a cél egy olyan neurális háló létrehozása és tanítása, amely az egyszerű logikai műveletek elvégzésére képes.
+</para>
+<para>
+A neutrális háló rendelkezik tanulási algoritmussal, vagyis képes megtalálni, hogy mit is akarunk amikor megtanítjuk OR és az AND logikai műveletre. Ebben az R programban megadjuk neki mi a bemenet és, hogy milyen kimenetet várunk erre. Az a1 és az a2 számokat tartalmaz és az OR-ban pedig a kimenetet tartalmazza. Azonban az EXOR műveletnél csak többrétegű neuronokkal lehet tanulni.
+</para>
+<programlisting language="R"><![CDATA[
+library(neuralnet)
+
+a1    <- c(0,1,0,1)
+a2    <- c(0,0,1,1)
+OR    <- c(0,1,1,1)
+
+or.data <- data.frame(a1, a2, OR)
+
+nn.or <- neuralnet(OR~a1+a2, or.data, hidden=0, linear.output=FALSE, stepmax = 1e+07, threshold = 0.000001)
+
+plot(nn.or)
+
+compute(nn.or, or.data[,1:2])
+
+a1    <- c(0,1,0,1)
+a2    <- c(0,0,1,1)
+OR    <- c(0,1,1,1)
+AND   <- c(0,0,0,1)
+
+orand.data <- data.frame(a1, a2, OR, AND)
+
+nn.orand <- neuralnet(OR+AND~a1+a2, orand.data, hidden=0, linear.output=FALSE, stepmax = 1e+07, threshold = 0.000001)
+
+plot(nn.orand)
+
+compute(nn.orand, orand.data[,1:2])
+
+a1      <- c(0,1,0,1)
+a2      <- c(0,0,1,1)
+EXOR    <- c(0,1,1,0)
+
+exor.data <- data.frame(a1, a2, EXOR)
+
+nn.exor <- neuralnet(EXOR~a1+a2, exor.data, hidden=0, linear.output=FALSE, stepmax = 1e+07, threshold = 0.000001)
+
+plot(nn.exor)
+
+compute(nn.exor, exor.data[,1:2])
+
+a1      <- c(0,1,0,1)
+a2      <- c(0,0,1,1)
+EXOR    <- c(0,1,1,0)
+
+exor.data <- data.frame(a1, a2, EXOR)
+
+nn.exor <- neuralnet(EXOR~a1+a2, exor.data, hidden=c(6, 4, 6), linear.output=FALSE, stepmax = 1e+07, threshold = 0.000001)
+
+plot(nn.exor)
+
+compute(nn.exor, exor.data[,1:2])
+
+]]></programlisting>
+<para>
+Megtanulta az OR kapcsolatot:
+</para>
+<programlisting><![CDATA[
+$net.result
+            [,1]
+[1,] 0.001525745
+[2,] 0.999008550
+[3,] 0.999381121
+[4,] 0.999999999
+]]></programlisting>
+<mediaobject>
+<imageobject>
+<imagedata fileref="img/neuralnet1.png" scale="50" />
+</imageobject>
+</mediaobject>
+<para>
+Megtanulta az AND kapcsolatot:
+</para>
+<programlisting><![CDATA[
+$net.result
+             [,1]         [,2]
+[1,] 0.0000259252 2.197895e-09
+[2,] 0.9999851644 1.181429e-03
+[3,] 0.9999812648 1.238723e-03
+[4,] 1.0000000000 9.985040e-01
+]]></programlisting>
+<mediaobject>
+<imageobject>
+<imagedata fileref="img/neuralnet2.png" scale="50" />
+</imageobject>
+</mediaobject>
+<para>
+Látható, hogy nem tanulta meg az EXOR kapcsolatot mivel nincs rejtett neuron benne (hidden = 0).
+</para>
+<programlisting><![CDATA[
+$net.result
+          [,1]
+[1,] 0.5000044
+[2,] 0.5000025
+[3,] 0.4999991
+[4,] 0.4999973
+]]></programlisting>
+<mediaobject>
+<imageobject>
+<imagedata fileref="img/neuralnet3.png" scale="50" />
+</imageobject>
+</mediaobject>
+<para>
+Azonban, ha rakunk bele 2 rejett neuront akkor képes rá (hidden = 2):
+</para>
+<programlisting><![CDATA[
+$net.result
+             [,1]
+[1,] 0.0009061289
+[2,] 0.9990045591
+[3,] 0.9999999939
+[4,] 0.0009021846
+]]></programlisting>
+<mediaobject>
+<imageobject>
+<imagedata fileref="img/neuralnet4.png" scale="50" />
+</imageobject>
+</mediaobject>
+</section>
+    <section>
+        <title>Hiba-visszaterjesztéses perceptron</title>
+        <para>
+            C++
+        </para>
+        <para>
+            Megoldás videó: <link xlink:href="https://youtu.be/XpBnR31BRJY">https://youtu.be/XpBnR31BRJY</link>
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href="https://github.com/nbatfai/nahshon/blob/master/ql.hpp#L64">https://github.com/nbatfai/nahshon/blob/master/ql.hpp#L64</link>               
+        </para>
+<para>
+Itt a mandelbrot által legenerált kép rgb kódjait rakjuk át a neurálisháló bemenetére.
+</para>
+<programlisting language="C++"><![CDATA[
+#include <iostream>
+#include <cmath>
+#include "png++/png.hpp"
+
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
+        std::cout << "Hasznalat: ./mandelpng fajlnev";
+    
+        return -1;
+    }
+
+    double a = -2.0, b = .7, c = -1.35, d = 1.35;
+    int szelesseg = 600, magassag = 600, iteraciosHatar = 1000;
+
+    png::image <png::rgb_pixel> kep(szelesseg, magassag);
+
+    double dx = (b-a)/szelesseg;
+    double dy = (d-c)/magassag;
+    double reC, imC, reZ, imZ, ujreZ, ujimZ;
+
+    int iteracio = 0;
+    std::cout << "Szamitas";
+
+    for (int j = 0; j < magassag; j++)
+    {
+        for (int k = 0; k < szelesseg; k++)
+        {
+            reC = a + k *dx;
+            imC = d - j*dy;
+            reZ = imZ = iteracio = 0;
+
+            while (pow(reZ, 2) + pow(imZ, 2) < 4 && iteracio < iteraciosHatar)
+            {
+                ujreZ = pow(reZ, 2) - pow(imZ, 2) + reC;
+                ujimZ = 2*reZ*imZ + imC;
+                reZ = ujreZ;
+                imZ = ujimZ;
+
+                iteracio++;
+            }
+
+            kep.set_pixel(k, j, png::rgb_pixel(255 - iteracio % 256, 255 - iteracio % 256, 255 - iteracio % 256));
+        }
+        std::cout << "." << std::flush;
+    }
+    kep.write(argv[1]);
+    std::cout << argv[1] << "mentve" << std::endl;
+}
+]]></programlisting>
+</section>
+
+<section>
+        <title>Vörös Pipacs Pokol/írd ki, mit lát Steve</title>
+        <para>
+            Megoldás videó: <link xlink:href="https://youtu.be/gH4xrGpdO0c">https://youtu.be/gH4xrGpdO0c</link>
+        </para>
+<para>
+Ebben a videóban látható a 3. szakkör megoldása c++-ban a videó végén.
+</para>
+    </section>
+</chapter>                

@@ -1,0 +1,1452 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Conway!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    <section>
+        <title>Hangyaszimulációk</title>
+        <para>
+            Írj Qt C++-ban egy hangyaszimulációs programot, a forrásaidról utólag reverse engineering jelleggel
+            készíts UML osztálydiagramot is!
+        </para>
+	<mediaobject>
+	<imageobject>
+	<imagedata fileref="img/antresize2.png" />
+	</imageobject>
+	</mediaobject>
+<para>Ez az UML ami lehetővé teszi, hogy grafikusan a való életben is vizualizáljuk az osztályokat, a köztük lévő kapcsolatokat, azok tulajdonságait, elemeit és ezeknek viselkedését. Itt egy részben egy bizonyos osztály látható, annak kapcsolatai a többi osztállyal, illetve az elemei. Ahhoz hogy egy osztályelem láthatöságát definiáljuk speciális karaktereket kell használnunk a + a public ,a -private, és a # a protected ,ezeket az elemek neve elé kell helyeznünk. </para>
+<para>Ez a program a hangyák viselkedését igyekszik imitálni. Tudni illik a hangyák nem magányos farkasként élik minden napjaikat, inkább csapatokba tömörülve mennek például élelmet kutatni. A hangyák képesek feromonjaikat a környezetükbe engedni, ezzel jelet hagyva a többi hangyának, hogy merre érdemes menni, kutatni, illetve a többi hangya ezt követi, ugyanis a hangyák nem képesek szóban komminkálni, ezért valamilyen olyan alternatív megoldást kell alkalmazniuk, hogy megértsék egymást, mint ahogy a többi élőlények is.
+	A programunk is erre az elvre alapszik, látszólag egy ablakban megjelennek kis fekete pixelek melyek mozognak és hagynak maguk után egy szines csikot, majd ha egy másik pixel betéved ebbe a csikba, követi azt. Tehát az elmélet: Hangya kutat, feromont hagy maga után, egy másik hangya követi, és minél tübb a feromon egy helyen, annál többenn mennek arra.</para>
+        <para>
+            Megoldás videó: <link xlink:href="https://bhaxor.blog.hu/2018/10/10/myrmecologist">https://bhaxor.blog.hu/2018/10/10/myrmecologist</link>
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href=""></link>               
+        </para>            
+    </section>
+    <section>
+        <title>Java életjáték</title>
+        <para>
+            Írd meg Java-ban a John Horton Conway-féle életjátékot, 
+            valósítsa meg a sikló-kilövőt!
+        </para>
+        <para>
+            Megoldás videó: 
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href="https://github.com/ElStl/bhax/tree/master/bhax_textbook_IgyNeveldaProgramozod/Conway/sejtautamata.java">https://github.com/ElStl/bhax/tree/master/bhax_textbook_IgyNeveldaProgramozod/Conway/sejtautamata.java</link>               
+        </para>
+        <para>
+A myrmecologist.pro fájl az ami összesíti az eddig említett fájlokat ,majd később a qmake el lefordítani és létrehozzuk belőle a futtatható állományt.
+</para>
+    </section>        
+    <section>
+        <title>Java életjáték</title>
+        <para>
+            Írd meg Java-ban a John Horton Conway-féle életjátékot, 
+            valósítsa meg a sikló-kilövőt!
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href="https://regi.tankonyvtar.hu/hu/tartalom/tkt/javat-tanitok-javat/apb.html#conway">https://regi.tankonyvtar.hu/hu/tartalom/tkt/javat-tanitok-javat/apb.html#conway</link>               
+        </para>
+		<para>
+	Az ún. életjáték  John Horton Conway ,a  Cambridge-i Egyetem matematikusának alkotása mely szabálzai egyszerűek:egy sejt(adott esetben pixel) csak akkor lehet álő ha 2 vagy 3 élő szomszédja van,ha ennél több,vagy kevesebb akkor halott lesz,illetve egy halott sejt cskis akkor kelhet életre ha pont 3 élő szomszédja van,mkinden más esetben halott marad. Egy sejt környezetét jelen esetben a rácsos felületen az őt körülvevő 8 cella.
+	Játékként való megnevezése csaló lehet ugyanis pontosan 0 személy jatszhat vele, a "játékosnak" mindössze annyi a dolga, hogy elhelzey egy kezdő alakzatot majd figyeli az eseményeket.
+	Láthatjuk még a "SIKLÓT" melynek érdekessége csupán annyiban merül ki,hogy átlósan jobbra mozog az ablak teteje felé. 
+</para>
+        <programlisting language = "java"><![CDATA[/*
+ * Sejtautomata.java
+ *
+ * DIGIT 2005, Javat tanítok
+ * Bátfai Norbert, nbatfai@inf.unideb.hu
+ *
+ */
+/**
+ * Sejtautomata osztály.
+ *
+ * @author Bátfai Norbert, nbatfai@inf.unideb.hu
+ * @version 0.0.1
+ */
+public class Sejtautomata extends java.awt.Frame implements Runnable {
+    public static final boolean ÉLŐ = true;
+    public static final boolean HALOTT = false;
+    protected boolean [][][] rácsok = new boolean [2][][];
+    protected boolean [][] rács;
+    protected int rácsIndex = 0;
+    protected int cellaSzélesség = 20;
+    protected int cellaMagasság = 20;
+    protected int szélesség = 20;
+    protected int magasság = 10;
+    protected int várakozás = 1000;
+    private java.awt.Robot robot;
+    private boolean pillanatfelvétel = false;
+    private static int pillanatfelvételSzámláló ;
+    public Sejtautomata(int szélesség, int magasság) {
+        this.szélesség = szélesség;
+        this.magasság = magasság;
+        rácsok[0] = new boolean[magasság][szélesség];
+        rácsok[1] = new boolean[magasság][szélesség];
+        rácsIndex = 0;
+        rács = rácsok[rácsIndex];
+        for(int i=0; i<rács.length; ++i)
+            for(int j=0; j<rács[0].length; ++j)
+                rács[i][j] = HALOTT;
+        siklóKilövő(rács, 5, 60);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                setVisible(false);
+                System.exit(0);
+            }
+        });
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if(e.getKeyCode() == java.awt.event.KeyEvent.VK_K) {
+                    cellaSzélesség /= 2;
+                    cellaMagasság /= 2;
+                    setSize(Sejtautomata.this.szélesség*cellaSzélesség,
+                            Sejtautomata.this.magasság*cellaMagasság);
+                    validate();
+                } else if(e.getKeyCode() == java.awt.event.KeyEvent.VK_N) {
+                    cellaSzélesség *= 2;
+                    cellaMagasság *= 2;
+                    setSize(Sejtautomata.this.szélesség*cellaSzélesség,
+                            Sejtautomata.this.magasság*cellaMagasság);
+                    validate();
+                } else if(e.getKeyCode() == java.awt.event.KeyEvent.VK_S)
+                    pillanatfelvétel = !pillanatfelvétel;
+                else if(e.getKeyCode() == java.awt.event.KeyEvent.VK_G)
+                    várakozás /= 2;
+                else if(e.getKeyCode() == java.awt.event.KeyEvent.VK_L)
+                    várakozás *= 2;
+                repaint();
+            }
+        });
+        addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent m) {
+                int x = m.getX()/cellaSzélesség;
+                int y = m.getY()/cellaMagasság;
+                rácsok[rácsIndex][y][x] = !rácsok[rácsIndex][y][x];
+                repaint();
+            }
+        });
+        addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent m) {
+                int x = m.getX()/cellaSzélesség;
+                int y = m.getY()/cellaMagasság;
+                rácsok[rácsIndex][y][x] = ÉLŐ;
+                repaint();
+            }
+        });
+        cellaSzélesség = 10;
+        cellaMagasság = 10;
+        try {
+            robot = new java.awt.Robot(
+                    java.awt.GraphicsEnvironment.
+                    getLocalGraphicsEnvironment().
+                    getDefaultScreenDevice());
+        } catch(java.awt.AWTException e) {
+            e.printStackTrace();
+        }
+        setTitle("Sejtautomata");
+        setResizable(false);
+        setSize(szélesség*cellaSzélesség,
+                magasság*cellaMagasság);
+        setVisible(true);
+        new Thread(this).start();
+    }
+    /** A sejttér kirajzolása. */
+    public void paint(java.awt.Graphics g) {
+        boolean [][] rács = rácsok[rácsIndex];
+        for(int i=0; i<rács.length; ++i) { 
+            for(int j=0; j<rács[0].length; ++j) { 
+                if(rács[i][j] == ÉLŐ)
+                    g.setColor(java.awt.Color.BLACK);
+                else
+                    g.setColor(java.awt.Color.WHITE);
+                g.fillRect(j*cellaSzélesség, i*cellaMagasság,
+                        cellaSzélesség, cellaMagasság);
+                g.setColor(java.awt.Color.LIGHT_GRAY);
+                g.drawRect(j*cellaSzélesség, i*cellaMagasság,
+                        cellaSzélesség, cellaMagasság);
+            }
+        }
+        if(pillanatfelvétel) {
+            pillanatfelvétel = false;
+            pillanatfelvétel(robot.createScreenCapture
+                    (new java.awt.Rectangle
+                    (getLocation().x, getLocation().y,
+                    szélesség*cellaSzélesség,
+                    magasság*cellaMagasság)));
+        }
+    }
+    /**
+     * Az kérdezett állapotban lévő nyolcszomszédok száma.
+     *
+     * @param   rács    a sejttér rács
+     * @param   sor     a rács vizsgált sora
+     * @param   oszlop  a rács vizsgált oszlopa
+     * @param   állapor a nyolcszomszédok vizsgált állapota
+     * @return int a kérdezett állapotbeli nyolcszomszédok száma.
+     */
+    public int szomszédokSzáma(boolean [][] rács,
+            int sor, int oszlop, boolean állapot) {        
+        int állapotúSzomszéd = 0;
+        // A nyolcszomszédok végigzongorázása:
+        for(int i=-1; i<2; ++i)
+            for(int j=-1; j<2; ++j)
+                // A vizsgált sejtet magát kihagyva:
+                if(!((i==0) && (j==0))) {
+            // A sejttérből szélének szomszédai
+            // a szembe oldalakon ("periódikus határfeltétel")
+            int o = oszlop + j;
+            if(o < 0)
+                o = szélesség-1;
+            else if(o >= szélesség)
+                o = 0;
+            
+            int s = sor + i;
+            if(s < 0)
+                s = magasság-1;
+            else if(s >= magasság)
+                s = 0;
+            
+            if(rács[s][o] == állapot)
+                ++állapotúSzomszéd;
+                }
+        
+        return állapotúSzomszéd;
+    }
+    /**
+     * A sejttér időbeli fejlődése a John H. Conway féle
+     * életjáték sejtautomata szabályai alapján történik.
+     * A szabályok részletes ismertetését lásd például a
+     * [MATEK JÁTÉK] hivatkozásban (Csákány Béla: Diszkrét
+     * matematikai játékok. Polygon, Szeged 1998. 171. oldal.)
+     */
+    public void időFejlődés() {
+        
+        boolean [][] rácsElőtte = rácsok[rácsIndex];
+        boolean [][] rácsUtána = rácsok[(rácsIndex+1)%2];
+        
+        for(int i=0; i<rácsElőtte.length; ++i) { // sorok
+            for(int j=0; j<rácsElőtte[0].length; ++j) { // oszlopok
+                
+                int élők = szomszédokSzáma(rácsElőtte, i, j, ÉLŐ);
+                
+                if(rácsElőtte[i][j] == ÉLŐ) {
+                /* Élő élő marad, ha kettő vagy három élő
+                 szomszedja van, különben halott lesz. */
+                    if(élők==2 || élők==3)
+                        rácsUtána[i][j] = ÉLŐ;
+                    else
+                        rácsUtána[i][j] = HALOTT;
+                }  else {
+                /* Halott halott marad, ha három élő
+                 szomszedja van, különben élő lesz. */
+                    if(élők==3)
+                        rácsUtána[i][j] = ÉLŐ;
+                    else
+                        rácsUtána[i][j] = HALOTT;
+                }
+            }
+        }
+        rácsIndex = (rácsIndex+1)%2;
+    }
+    /** A sejttér időbeli fejlődése. */
+    public void run() {
+        
+        while(true) {
+            try {
+                Thread.sleep(várakozás);
+            } catch (InterruptedException e) {}
+            
+            időFejlődés();
+            repaint();
+        }
+    }
+    /**
+     * A sejttérbe "élőlényeket" helyezünk, ez a "sikló".
+     * Adott irányban halad, másolja magát a sejttérben.
+     * Az élőlény ismertetését lásd például a
+     * [MATEK JÁTÉK] hivatkozásban (Csákány Béla: Diszkrét
+     * matematikai játékok. Polygon, Szeged 1998. 172. oldal.)
+     *
+     * @param   rács    a sejttér ahová ezt az állatkát helyezzük
+     * @param   x       a befoglaló tégla bal felső sarkának oszlopa
+     * @param   y       a befoglaló tégla bal felső sarkának sora
+     */
+    public void sikló(boolean [][] rács, int x, int y) {
+        
+        rács[y+ 0][x+ 2] = ÉLŐ;
+        rács[y+ 1][x+ 1] = ÉLŐ;
+        rács[y+ 2][x+ 1] = ÉLŐ;
+        rács[y+ 2][x+ 2] = ÉLŐ;
+        rács[y+ 2][x+ 3] = ÉLŐ;
+        
+    }
+    /**
+     * A sejttérbe "élőlényeket" helyezünk, ez a "sikló ágyú".
+     * Adott irányban siklókat lő ki.
+     * Az élőlény ismertetését lásd például a
+     * [MATEK JÁTÉK] hivatkozásban /Csákány Béla: Diszkrét
+     * matematikai játékok. Polygon, Szeged 1998. 173. oldal./,
+     * de itt az ábra hibás, egy oszloppal told még balra a 
+     * bal oldali 4 sejtes négyzetet. A helyes ágyú rajzát 
+     * lásd pl. az [ÉLET CIKK] hivatkozásban /Robert T. 
+     * Wainwright: Life is Universal./ (Megemlíthetjük, hogy
+     * mindkettő tartalmaz két felesleges sejtet is.)
+     *
+     * @param   rács    a sejttér ahová ezt az állatkát helyezzük
+     * @param   x       a befoglaló tégla bal felső sarkának oszlopa
+     * @param   y       a befoglaló tégla bal felső sarkának sora
+     */    
+    public void siklóKilövő(boolean [][] rács, int x, int y) {
+        
+        rács[y+ 6][x+ 0] = ÉLŐ;
+        rács[y+ 6][x+ 1] = ÉLŐ;
+        rács[y+ 7][x+ 0] = ÉLŐ;
+        rács[y+ 7][x+ 1] = ÉLŐ;
+        
+        rács[y+ 3][x+ 13] = ÉLŐ;
+        
+        rács[y+ 4][x+ 12] = ÉLŐ;
+        rács[y+ 4][x+ 14] = ÉLŐ;
+        
+        rács[y+ 5][x+ 11] = ÉLŐ;
+        rács[y+ 5][x+ 15] = ÉLŐ;
+        rács[y+ 5][x+ 16] = ÉLŐ;
+        rács[y+ 5][x+ 25] = ÉLŐ;
+        
+        rács[y+ 6][x+ 11] = ÉLŐ;
+        rács[y+ 6][x+ 15] = ÉLŐ;
+        rács[y+ 6][x+ 16] = ÉLŐ;
+        rács[y+ 6][x+ 22] = ÉLŐ;
+        rács[y+ 6][x+ 23] = ÉLŐ;
+        rács[y+ 6][x+ 24] = ÉLŐ;
+        rács[y+ 6][x+ 25] = ÉLŐ;
+        
+        rács[y+ 7][x+ 11] = ÉLŐ;
+        rács[y+ 7][x+ 15] = ÉLŐ;
+        rács[y+ 7][x+ 16] = ÉLŐ;
+        rács[y+ 7][x+ 21] = ÉLŐ;
+        rács[y+ 7][x+ 22] = ÉLŐ;
+        rács[y+ 7][x+ 23] = ÉLŐ;
+        rács[y+ 7][x+ 24] = ÉLŐ;
+        
+        rács[y+ 8][x+ 12] = ÉLŐ;
+        rács[y+ 8][x+ 14] = ÉLŐ;
+        rács[y+ 8][x+ 21] = ÉLŐ;
+        rács[y+ 8][x+ 24] = ÉLŐ;
+        rács[y+ 8][x+ 34] = ÉLŐ;
+        rács[y+ 8][x+ 35] = ÉLŐ;
+        
+        rács[y+ 9][x+ 13] = ÉLŐ;
+        rács[y+ 9][x+ 21] = ÉLŐ;
+        rács[y+ 9][x+ 22] = ÉLŐ;
+        rács[y+ 9][x+ 23] = ÉLŐ;
+        rács[y+ 9][x+ 24] = ÉLŐ;
+        rács[y+ 9][x+ 34] = ÉLŐ;
+        rács[y+ 9][x+ 35] = ÉLŐ;
+        
+        rács[y+ 10][x+ 22] = ÉLŐ;
+        rács[y+ 10][x+ 23] = ÉLŐ;
+        rács[y+ 10][x+ 24] = ÉLŐ;
+        rács[y+ 10][x+ 25] = ÉLŐ;
+        
+        rács[y+ 11][x+ 25] = ÉLŐ;
+        
+    }
+    /** Pillanatfelvételek készítése. */
+    public void pillanatfelvétel(java.awt.image.BufferedImage felvetel) {
+        // A pillanatfelvétel kép fájlneve
+        StringBuffer sb = new StringBuffer();
+        sb = sb.delete(0, sb.length());
+        sb.append("sejtautomata");
+        sb.append(++pillanatfelvételSzámláló);
+        sb.append(".png");
+        // png formátumú képet mentünk
+        try {
+            javax.imageio.ImageIO.write(felvetel, "png",
+                    new java.io.File(sb.toString()));
+        } catch(java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
+    // Ne villogjon a felület (mert a "gyári" update()
+    // lemeszelné a vászon felületét).    
+    public void update(java.awt.Graphics g) {
+        paint(g);
+    }    
+    /**
+     * Példányosít egy Conway-féle életjáték szabályos
+     * sejttér obektumot.
+     */    
+    public static void main(String[] args) {
+      
+        new Sejtautomata(100, 75);
+    }
+}       
+
+
+
+
+		]]></programlisting>           
+    </section>        
+    <section>
+        <title>Qt C++ életjáték</title>
+        <para>
+            Most Qt C++-ban!
+        </para>
+        <para>
+            Megoldás videó: 
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href=""></link>               
+        </para>
+        <para>
+            Egy konkrét sejtautomatával talán a legismertebb ilyennel a John Horton Conway-féle életjátékkal foglalkozunk részletesen. Itt egy sejt egy sejttér eleme, a sejt állapota lehet élő vagy halott. A diszkrét időben működő sejttér adott sejtjének állapotát a következő időpillanatban a következő átmeneti szabályok alapján számolhatjuk ki. Élő sejt élő marad, ha kettő vagy három élő szomszédja van, különben halott lesz. Halott sejt halott marad, ha három élő szomszédja van, különben élő lesz. [...]
+        </para>            
+    </section>        
+    <section>
+        <title>BrainB Benchmark</title>
+        <para>
+        </para>
+        <para>
+            Megoldás videó: 
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href=""></link>               
+        </para>
+<para>
+ <programlisting language = "c++"><![CDATA[   #ifndef BrainBThread_H
+#define BrainBThread_H
+
+/**
+ * @brief Benchmarking Cognitive Abilities of the Brain with Computer Games
+ *
+ * @file BrainBThread.h
+ * @author  Norbert Bátfai <nbatfai@gmail.com>
+ * @version 6.0.1
+ *
+ * @section LICENSE
+ *
+ * Copyright (C) 2017, 2018 Norbert Bátfai, nbatfai@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @section DESCRIPTION
+ *
+ */
+
+#include <QThread>
+#include <QSize>
+#include <QImage>
+#include <QDebug>
+#include <sstream>
+#include <QPainter>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+class Hero;
+typedef std::vector<Hero> Heroes;
+
+class Hero
+{
+
+public:
+    int x;
+    int y;
+    int color;
+    int agility;
+    int conds {0};
+    std::string name;
+
+    Hero ( int x=0, int  y=0, int color=0, int agility=1,  std::string name ="Samu Entropy" ) :
+        x ( x ), y ( y ), color ( color ), agility ( agility ), name ( name )
+    {}
+    ~Hero() {}
+
+    void move ( int maxx, int maxy, int env ) {
+
+        int newx = x+ ( ( ( double ) agility*1.0 ) * ( double ) ( std::rand() / ( RAND_MAX+1.0 ) )-agility/2 ) ;
+        if ( newx-env > 0 && newx+env < maxx ) {
+            x = newx;
+        }
+        int newy = y+ ( ( ( double ) agility*1.0 ) * ( double ) ( std::rand() / ( RAND_MAX+1.0 ) )-agility/2 );
+        if ( newy-env > 0 && newy+env < maxy ) {
+            y = newy;
+        }
+
+    }
+
+};
+
+class BrainBThread : public QThread
+{
+    Q_OBJECT
+
+    
+     //Norbi
+    cv::Scalar cBg { 247, 223, 208 };
+    cv::Scalar cBorderAndText { 47, 8, 4 };
+    cv::Scalar cCenter { 170, 18, 1 };
+    cv::Scalar cBoxes { 10, 235, 252 };
+    
+
+    /*
+    //Matyi
+    cv::Scalar cBg { 86, 26, 228 };
+    cv::Scalar cBorderAndText { 14, 177, 232 };
+    cv::Scalar cCenter { 232, 14, 103 };
+    cv::Scalar cBoxes { 14, 232, 195 };
+*/
+    
+    Heroes heroes;
+    int heroRectSize {40};
+
+    cv::Mat prev {3*heroRectSize, 3*heroRectSize, CV_8UC3, cBg };
+    int bps;
+    long time {0};
+    long endTime {10*60*10};
+    int delay {100};
+
+    bool paused {true};
+    int nofPaused {0};
+
+    std::vector<int> lostBPS;
+    std::vector<int> foundBPS;
+
+    int w;
+    int h;
+    int dispShift {40};
+
+public:
+    BrainBThread ( int w = 256, int h = 256 );
+    ~BrainBThread();
+
+    void run();
+    void pause();
+    void set_paused ( bool p );
+    int getDelay() const {
+
+        return delay;
+
+    }
+    void setDelay ( int delay ) {
+
+        if ( delay > 0 ) {
+            delay = delay;
+        }
+
+    }
+
+    void devel() {
+
+        for ( Hero & hero : heroes ) {
+
+            hero.move ( w, h, ( h<w ) ?h/10:w/10 );
+
+        }
+
+    }
+
+    int nofHeroes () {
+
+        return  heroes.size();
+
+    }
+
+    std::vector<int> &lostV () {
+
+        return  lostBPS;
+
+    }
+
+    std::vector<int> &foundV () {
+
+        return  foundBPS;
+
+    }
+
+    double meanLost () {
+
+        return  mean ( lostBPS );
+
+    }
+
+    double varLost ( double mean ) {
+
+        return  var ( lostBPS, mean );
+
+    }
+
+    double meanFound () {
+
+        return  mean ( foundBPS );
+
+    }
+
+    double varFound ( double mean ) {
+
+        return  var ( foundBPS, mean );
+
+    }
+
+    double mean ( std::vector<int> vect ) {
+
+        double sum = std::accumulate ( vect.begin (), vect.end (), 0.0 );
+        return  sum / vect.size();
+
+    }
+
+    double var ( std::vector<int> vect, double mean ) {
+
+        double accum = 0.0;
+        std::for_each ( vect.begin (), vect.end (), [&] ( const double d ) {
+            accum += ( d - mean ) * ( d - mean );
+        } );
+
+        return sqrt ( accum / ( vect.size()-1 ) );
+    }
+
+    int get_bps() const {
+
+        return bps;
+
+    }
+
+    int get_w() const {
+
+        return w;
+
+    }
+
+
+    bool get_paused() const {
+
+        return paused;
+
+    }
+
+    int get_nofPaused() const {
+
+        return nofPaused;
+
+    }
+
+    void decComp() {
+
+        lostBPS.push_back ( bps );
+
+        if ( heroes.size() > 1 ) {
+            heroes.pop_back();
+        }
+
+        for ( Hero & hero : heroes ) {
+            if ( hero.agility >= 5 ) {
+                hero.agility -= 2;
+            }
+
+        }
+
+    }
+
+    void incComp() {
+
+        foundBPS.push_back ( bps );
+
+        if ( heroes.size() > 300 ) {
+
+            return;
+
+        }
+
+        /*
+        Hero other ( w/2 + 200.0*std::rand() / ( RAND_MAX+1.0 )-100,
+                     h/2 + 200.0*std::rand() / ( RAND_MAX+1.0 )-100,
+                     255.0*std::rand() / ( RAND_MAX+1.0 ), 11, "New Entropy" );
+                     */
+
+	double rx = 200.0;
+	if(heroes[0].x - 200 < 0)
+	  rx = heroes[0].x;
+	else if(heroes[0].x + 200 > w)
+	  rx = w - heroes[0].x;
+	
+	double ry = 200.0;
+	if(heroes[0].y - 200 < 0)
+	  ry = heroes[0].y;
+	else if(heroes[0].y + 200 > h)
+	  ry = h - heroes[0].y;
+	
+        Hero other ( heroes[0].x + rx*std::rand() / ( RAND_MAX+1.0 )-rx/2,
+                     heroes[0].y + ry*std::rand() / ( RAND_MAX+1.0 )-ry/2,
+                     255.0*std::rand() / ( RAND_MAX+1.0 ), 11, "New Entropy" );
+		
+        heroes.push_back ( other );
+
+        for ( Hero & hero : heroes ) {
+
+            ++hero.conds;
+            if ( hero.conds == 3 ) {
+                hero.conds = 0;
+                hero.agility += 2;
+            }
+
+        }
+
+    }
+
+    void draw () {
+
+        cv::Mat src ( h+3*heroRectSize, w+3*heroRectSize, CV_8UC3, cBg );
+
+        for ( Hero & hero : heroes ) {
+
+            cv::Point x ( hero.x-heroRectSize+dispShift, hero.y-heroRectSize+dispShift );
+            cv::Point y ( hero.x+heroRectSize+dispShift, hero.y+heroRectSize+dispShift );
+
+            cv::rectangle ( src, x, y, cBorderAndText );
+
+            cv::putText ( src, hero.name, x, cv::FONT_HERSHEY_SIMPLEX, .35, cBorderAndText, 1 );
+
+            cv::Point xc ( hero.x+dispShift , hero.y+dispShift );
+
+            cv::circle ( src, xc, 11, cCenter, CV_FILLED, 8, 0 );
+
+            cv::Mat box = src ( cv::Rect ( x, y ) );
+
+            cv::Mat cbox ( 2*heroRectSize, 2*heroRectSize, CV_8UC3, cBoxes );
+            box = cbox*.3 + box*.7;
+
+        }
+
+        cv::Mat comp;
+
+        cv::Point focusx ( heroes[0].x- ( 3*heroRectSize ) /2+dispShift, heroes[0].y- ( 3*heroRectSize ) /2+dispShift );
+        cv::Point focusy ( heroes[0].x+ ( 3*heroRectSize ) /2+dispShift, heroes[0].y+ ( 3*heroRectSize ) /2+dispShift );
+        cv::Mat focus = src ( cv::Rect ( focusx, focusy ) );
+
+        cv::compare ( prev, focus, comp, cv::CMP_NE );
+
+        cv::Mat aRgb;
+        cv::extractChannel ( comp, aRgb, 0 );
+
+        bps = cv::countNonZero ( aRgb ) * 10;
+
+        //qDebug()  << bps << " bits/sec";
+
+        prev = focus;
+
+        QImage dest ( src.data, src.cols, src.rows, src.step, QImage::Format_RGB888 );
+        dest=dest.rgbSwapped();
+        dest.bits();
+
+        emit heroesChanged ( dest, heroes[0].x, heroes[0].y );
+
+    }
+
+    long getT() const {
+
+        return time;
+
+    }
+
+    void finish () {
+
+        time = endTime;
+
+    }
+
+
+signals:
+
+    void heroesChanged ( const QImage &image, const int &x, const int &y );
+    void endAndStats ( const int &t );
+
+};
+
+#endif // BrainBThread_H
+
+
+	   
+	   ]]></programlisting>     
+<programlisting language = "c++"><![CDATA[#ifndef BrainBWin_H
+#define BrainBWin_H
+
+/**
+ * @brief Benchmarking Cognitive Abilities of the Brain with Computer Games
+ *
+ * @file BrainBWin.h
+ * @author  Norbert Bátfai <nbatfai@gmail.com>
+ * @version 6.0.1
+ *
+ * @section LICENSE
+ *
+ * Copyright (C) 2017, 2018 Norbert Bátfai, nbatfai@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @section DESCRIPTION
+ *
+ */
+
+#include <QKeyEvent>
+#include <QMainWindow>
+#include <QPixmap>
+#include <QPainter>
+#include <QFont>
+#include <QFile>
+#include <QString>
+#include <QCloseEvent>
+#include <QDate>
+#include <QDir>
+#include <QDateTime>
+#include "BrainBThread.h"
+
+enum playerstate {
+    lost,
+    found
+};
+
+class BrainBWin : public QMainWindow
+{
+    Q_OBJECT
+
+    BrainBThread *brainBThread;
+    QPixmap pixmap;
+    Heroes *heroes;
+
+    int mouse_x;
+    int mouse_y;
+    int yshift {50};
+    int nofLost {0};
+    int nofFound {0};
+
+    int xs, ys;
+
+    bool firstLost {false};
+    bool start {false};
+    playerstate state = lost;
+    std::vector<int> lost2found;
+    std::vector<int> found2lost;
+
+    QString statDir;
+
+public:
+    static const QString appName;
+    static const QString appVersion;
+    BrainBWin ( int w = 256, int h = 256, QWidget *parent = 0 );
+
+    void closeEvent ( QCloseEvent *e ) {
+
+        if ( save ( brainBThread->getT() ) ) {
+            brainBThread->finish();
+            e->accept();
+        } else {
+            e->ignore();
+        }
+
+    }
+
+    virtual ~BrainBWin();
+    void paintEvent ( QPaintEvent * );
+    void keyPressEvent ( QKeyEvent *event );
+    void mouseMoveEvent ( QMouseEvent *event );
+    void mousePressEvent ( QMouseEvent *event );
+    void mouseReleaseEvent ( QMouseEvent *event );
+
+    double mean ( std::vector<int> vect ) {
+
+        if ( vect.size() > 0 ) {
+            double sum = std::accumulate ( vect.begin (), vect.end (), 0.0 );
+            return  sum / vect.size();
+        } else {
+            return 0.0;
+        }
+    }
+
+    double var ( std::vector<int> vect, double mean ) {
+
+        if ( vect.size() > 1 ) {
+
+            double accum = 0.0;
+
+            std::for_each ( vect.begin (), vect.end (), [&] ( const double d ) {
+                accum += ( d - mean ) * ( d - mean );
+            } );
+
+            return sqrt ( accum / ( vect.size()-1 ) );
+        } else {
+            return 0.0;
+        }
+
+    }
+
+    void millis2minsec ( int millis, int &min, int &sec ) {
+
+        sec = ( millis * 100 ) / 1000;
+        min = sec / 60;
+        sec = sec - min * 60;
+
+    }
+
+    bool save ( int t ) {
+
+        bool ret = false;
+
+        if ( !QDir ( statDir ).exists() )
+            if ( !QDir().mkdir ( statDir ) ) {
+                return false;
+            }
+
+        QString name = statDir + "/Test-" + QString::number ( t );
+        QFile file ( name + "-screenimage.png" );
+        if ( file.open ( QIODevice::WriteOnly ) ) {
+            ret = pixmap.save ( &file, "PNG" );
+        }
+
+        QFile tfile ( name + "-stats.txt" );
+        ret = tfile.open ( QIODevice::WriteOnly | QIODevice::Text );
+        if ( ret ) {
+            QTextStream textStremam ( &tfile );
+
+            textStremam << appName + " " + appVersion << "\n";
+            textStremam << "time      : " <<  brainBThread->getT() << "\n";
+            textStremam << "bps       : " <<  brainBThread->get_bps() << "\n";
+            textStremam << "noc       : " <<  brainBThread->nofHeroes() << "\n";
+            textStremam << "nop       : " <<  brainBThread->get_nofPaused() << "\n";
+
+            textStremam << "lost      : "  << "\n";
+            std::vector<int> l = brainBThread->lostV();
+            for ( int n : l ) {
+                textStremam << n << ' ';
+            }
+            textStremam <<  "\n";
+            int m = mean ( l );
+            textStremam << "mean      : " <<  m << "\n";
+            textStremam << "var       : " <<  var ( l, m ) << "\n";
+
+            textStremam << "found     : " ;
+            std::vector<int> f = brainBThread->foundV();
+            for ( int n : f ) {
+                textStremam << n << ' ';
+            }
+            textStremam <<  "\n";
+            m = mean ( f );
+            textStremam << "mean      : " <<  m << "\n";
+            textStremam << "var       : " <<  var ( f, m ) << "\n";
+
+            textStremam << "lost2found: "  ;
+            for ( int n : lost2found ) {
+                textStremam << n << ' ';
+            }
+            textStremam <<  "\n";
+            int m1 = m = mean ( lost2found );
+            textStremam << "mean      : " <<  m << "\n";
+            textStremam << "var       : " <<  var ( lost2found, m ) << "\n";
+
+            textStremam << "found2lost: "  ;
+            for ( int n : found2lost ) {
+                textStremam << n << ' ';
+            }
+            textStremam <<  "\n";
+            int m2 = m = mean ( found2lost );
+            textStremam << "mean      : " <<  m << "\n";
+            textStremam << "var       : " <<  var ( found2lost, m ) << "\n";
+
+            if ( m1 < m2 ) {
+                textStremam << "mean(lost2found) < mean(found2lost)" << "\n";
+            }
+
+            int min, sec;
+            millis2minsec ( t, min, sec );
+            textStremam << "time      : " <<  min  << ":"  << sec << "\n";
+
+            double res = ( ( ( ( double ) m1+ ( double ) m2 ) /2.0 ) /8.0 ) /1024.0;
+            textStremam << "U R about " << res << " Kilobytes\n";
+
+            tfile.close();
+        }
+        return ret;
+    }
+
+public slots :
+
+    void updateHeroes ( const QImage &image, const int &x, const int &y );
+    //void stats ( const int &t );
+    void endAndStats ( const int &t );
+};
+
+#endif // BrainBWin
+
+	   
+	   ]]></programlisting>   
+<programlisting language = "c++"><![CDATA[/**
+ * @brief Benchmarking Cognitive Abilities of the Brain with Computer Games
+ *
+ * @file BrainBThread.cpp
+ * @author  Norbert Bátfai <nbatfai@gmail.com>
+ * @version 6.0.1
+ *
+ * @section LICENSE
+ *
+ * Copyright (C) 2017, 2018 Norbert Bátfai, nbatfai@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @section DESCRIPTION
+ *
+ */
+
+#include "BrainBThread.h"
+
+BrainBThread::BrainBThread ( int w, int h )
+{
+
+        dispShift = heroRectSize+heroRectSize/2;
+
+        this->w = w - 3 * heroRectSize;
+        this->h = h - 3 * heroRectSize;
+
+        std::srand ( std::time ( 0 ) );
+
+        Hero me ( this->w / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100,
+                  this->h / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100, 255.0 * std::rand() / ( RAND_MAX + 1.0 ), 9 );
+
+        Hero other1 ( this->w / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100,
+                      this->h / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100, 255.0 * std::rand() / ( RAND_MAX + 1.0 ), 5, "Norbi Entropy" );
+        Hero other2 ( this->w / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100,
+                      this->h / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100, 255.0 * std::rand() / ( RAND_MAX + 1.0 ), 3, "Greta Entropy" );
+        Hero other4 ( this->w / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100,
+                      this->h / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100, 255.0 * std::rand() / ( RAND_MAX + 1.0 ), 5, "Nandi Entropy" );
+        Hero other5 ( this->w / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100,
+                      this->h / 2 + 200.0 * std::rand() / ( RAND_MAX + 1.0 ) - 100, 255.0 * std::rand() / ( RAND_MAX + 1.0 ), 7, "Matyi Entropy" );
+
+        heroes.push_back ( me );
+        heroes.push_back ( other1 );
+        heroes.push_back ( other2 );
+        heroes.push_back ( other4 );
+        heroes.push_back ( other5 );
+
+}
+
+BrainBThread::~BrainBThread()
+{
+
+}
+
+void BrainBThread::run()
+{
+        while ( time < endTime ) {
+
+                QThread::msleep ( delay );
+
+                if ( !paused ) {
+
+                        ++time;
+
+                        devel();
+
+                }
+
+                draw();
+
+        }
+
+        emit endAndStats ( endTime );
+
+}
+
+void BrainBThread::pause()
+{
+
+        paused = !paused;
+        if ( paused ) {
+                ++nofPaused;
+        }
+
+}
+
+void BrainBThread::set_paused ( bool p )
+{
+
+        if ( !paused && p ) {
+                ++nofPaused;
+        }
+
+        paused = p;
+
+}
+
+
+
+
+	   
+	   ]]></programlisting>   
+<programlisting language = "c++"><![CDATA[/**
+ * @brief Benchmarking Cognitive Abilities of the Brain with Computer Games
+ *
+ * @file BrainBWin.cpp
+ * @author  Norbert Bátfai <nbatfai@gmail.com>
+ * @version 6.0.1
+ *
+ * @section LICENSE
+ *
+ * Copyright (C) 2017, 2018 Norbert Bátfai, nbatfai@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @section DESCRIPTION
+ *
+ */
+
+#include "BrainBWin.h"
+
+const QString BrainBWin::appName = "NEMESPOR BrainB Test";
+const QString BrainBWin::appVersion = "6.0.3";
+
+BrainBWin::BrainBWin ( int w, int h, QWidget *parent ) : QMainWindow ( parent )
+{
+
+//    setWindowTitle(appName + " " + appVersion);
+//    setFixedSize(QSize(w, h));
+
+        statDir = appName + " " + appVersion + " - " + QDate::currentDate().toString() + QString::number ( QDateTime::currentMSecsSinceEpoch() );
+
+        brainBThread = new BrainBThread ( w, h - yshift );
+        brainBThread->start();
+
+        connect ( brainBThread, SIGNAL ( heroesChanged ( QImage, int, int ) ),
+                  this, SLOT ( updateHeroes ( QImage, int, int ) ) );
+
+        connect ( brainBThread, SIGNAL ( endAndStats ( int ) ),
+                  this, SLOT ( endAndStats ( int ) ) );
+
+}
+
+void BrainBWin::endAndStats ( const int &t )
+{
+
+        qDebug()  << "\n\n\n";
+        qDebug()  << "Thank you for using " + appName;
+        qDebug()  << "The result can be found in the directory " + statDir;
+        qDebug()  << "\n\n\n";
+
+        save ( t );
+        close();
+}
+
+void BrainBWin::updateHeroes ( const QImage &image, const int &x, const int &y )
+{
+
+        if ( start && !brainBThread->get_paused() ) {
+
+                int dist = ( this->mouse_x - x ) * ( this->mouse_x - x ) + ( this->mouse_y - y ) * ( this->mouse_y - y );
+
+                if ( dist > 121 ) {
+                        ++nofLost;
+                        nofFound = 0;
+                        if ( nofLost > 12 ) {
+
+                                if ( state == found && firstLost ) {
+                                        found2lost.push_back ( brainBThread->get_bps() );
+                                }
+
+                                firstLost = true;
+
+                                state = lost;
+                                nofLost = 0;
+                                //qDebug() << "LOST";
+                                //double mean = brainBThread->meanLost();
+                                //qDebug() << mean;
+
+                                brainBThread->decComp();
+                        }
+                } else {
+                        ++nofFound;
+                        nofLost = 0;
+                        if ( nofFound > 12 ) {
+
+                                if ( state == lost && firstLost ) {
+                                        lost2found.push_back ( brainBThread->get_bps() );
+                                }
+
+                                state = found;
+                                nofFound = 0;
+                                //qDebug() << "FOUND";
+                                //double mean = brainBThread->meanFound();
+                                //qDebug() << mean;
+
+                                brainBThread->incComp();
+                        }
+
+                }
+
+        }
+        pixmap = QPixmap::fromImage ( image );
+        update();
+}
+
+void BrainBWin::paintEvent ( QPaintEvent * )
+{
+        if ( pixmap.isNull() ) {
+                return;
+        }
+
+        QPainter qpainter ( this );
+
+        xs = ( qpainter.device()->width() - pixmap.width() ) /2;
+        ys = ( qpainter.device()->height() - pixmap.height() +yshift ) /2;
+
+        qpainter.drawPixmap ( xs, ys, pixmap );
+
+        qpainter.drawText ( 10, 20, "Press and hold the mouse button on the center of Samu Entropy" );
+
+        int time = brainBThread->getT();
+        int min, sec;
+        millis2minsec ( time, min, sec );
+        QString timestr = QString::number ( min ) + ":" + QString::number ( sec ) + "/10:0";
+        qpainter.drawText ( 10, 40, timestr );
+
+        int bps = brainBThread->get_bps();
+        QString bpsstr = QString::number ( bps ) + " bps";
+        qpainter.drawText ( 110, 40, bpsstr );
+
+        if ( brainBThread->get_paused() ) {
+                QString pausedstr = "PAUSED (" + QString::number ( brainBThread->get_nofPaused() ) + ")";
+
+                qpainter.drawText ( 210, 40, pausedstr );
+        }
+
+        qpainter.end();
+}
+
+void BrainBWin::mousePressEvent ( QMouseEvent *event )
+{
+
+        brainBThread->set_paused ( false );
+
+}
+
+void BrainBWin::mouseReleaseEvent ( QMouseEvent *event )
+{
+
+        //brainBThread->set_paused(true);
+
+}
+
+void BrainBWin::mouseMoveEvent ( QMouseEvent *event )
+{
+
+        start = true;
+
+        mouse_x = event->pos().x() -xs - 60;
+        //mouse_y = event->pos().y() - yshift - 60;
+        mouse_y = event->pos().y() - ys - 60;
+}
+
+void BrainBWin::keyPressEvent ( QKeyEvent *event )
+{
+
+        if ( event->key() == Qt::Key_S ) {
+                save ( brainBThread->getT() );
+        } else if ( event->key() == Qt::Key_P ) {
+                brainBThread->pause();
+        } else if ( event->key() == Qt::Key_Q ||  event->key() == Qt::Key_Escape ) {
+                close();
+        }
+
+}
+
+BrainBWin::~BrainBWin()
+{
+
+}
+
+	   
+	   ]]></programlisting>   
+<programlisting language = "c++"><![CDATA[/**
+ * @brief Benchmarking Cognitive Abilities of the Brain with Computer Games
+ *
+ * @file main.cpp
+ * @author  Norbert Bátfai <nbatfai@gmail.com>
+ * @version 6.0.1
+ *
+ * @section LICENSE
+ *
+ * Copyright (C) 2017, 2018 Norbert Bátfai, nbatfai@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @section DESCRIPTION
+ *
+ */
+
+#include <QApplication>
+#include <QTextStream>
+#include <QtWidgets>
+#include "BrainBWin.h"
+
+int main ( int argc, char **argv )
+{
+        QApplication app ( argc, argv );
+
+        QTextStream qout ( stdout );
+        qout.setCodec ( "UTF-8" );
+
+        qout << "\n" << BrainBWin::appName << QString::fromUtf8 ( " Copyright (C) 2017, 2018 Norbert Bátfai" ) << endl;
+
+        qout << "This program is free software: you can redistribute it and/or modify it under" << endl;
+        qout << "the terms of the GNU General Public License as published by the Free Software" << endl;
+        qout << "Foundation, either version 3 of the License, or (at your option) any later" << endl;
+        qout << "version.\n" << endl;
+
+        qout << "This program is distributed in the hope that it will be useful, but WITHOUT" << endl;
+        qout << "ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS" << endl;
+        qout << "FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n" << endl;
+
+        qout << QString::fromUtf8 ( "Ez a program szabad szoftver; terjeszthető illetve módosítható a Free Software" ) << endl;
+        qout << QString::fromUtf8 ( "Foundation által kiadott GNU General Public License dokumentumában leírtak;" ) << endl;
+        qout << QString::fromUtf8 ( "akár a licenc 3-as, akár (tetszőleges) későbbi változata szerint.\n" ) << endl;
+
+        qout << QString::fromUtf8 ( "Ez a program abban a reményben kerül közreadásra, hogy hasznos lesz, de minden" ) << endl;
+        qout << QString::fromUtf8 ( "egyéb GARANCIA NÉLKÜL, az ELADHATÓSÁGRA vagy VALAMELY CÉLRA VALÓ" ) << endl;
+        qout << QString::fromUtf8 ( "ALKALMAZHATÓSÁGRA való származtatott garanciát is beleértve. További" ) << endl;
+        qout << QString::fromUtf8 ( "részleteket a GNU General Public License tartalmaz.\n" ) << endl;
+
+        qout << "http://gnu.hu/gplv3.html" << endl;
+
+        QRect rect = QApplication::desktop()->availableGeometry();
+        BrainBWin brainBWin ( rect.width(), rect.height() );
+        brainBWin.setWindowState ( brainBWin.windowState() ^ Qt::WindowFullScreen );
+        brainBWin.show();
+        return app.exec();
+}
+
+	   
+	   ]]></programlisting>   
+<programlisting language = "c++"><![CDATA[ #
+ # @brief Benchmarking Cognitive Abilities of the Brain with Computer Games
+ #
+ # @file BrainB.pro
+ # @author  Norbert Bátfai <nbatfai@gmail.com>
+ # @version 0.0.1
+ #
+ # @section LICENSE
+ #
+ # Copyright (C) 2017 Norbert Bátfai, nbatfai@gmail.com
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version.
+ #
+ # This program is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ #
+ # @section DESCRIPTION
+ #
+ #
+ 
+QT += widgets core
+CONFIG += c++11 c++14 c++17
+QMAKE_CXXFLAGS += -fopenmp
+LIBS += -fopenmp 
+LIBS += `pkg-config --libs opencv`
+
+TEMPLATE = app
+TARGET = BrainB
+INCLUDEPATH += .
+
+HEADERS += BrainBThread.h  BrainBWin.h
+SOURCES += BrainBThread.cpp  BrainBWin.cpp  main.cpp
+
+	   
+	   ]]></programlisting>
+</para>
+        <para>
+            Tanulságok, tapasztalatok, magyarázat...
+        </para>            
+    </section>
+ <section>
+        <title>Vörös Pipacs Pokol/19 RF</title>
+        <para>
+            Megoldás videó: <link xlink:href="https://youtu.be/VP0kfvRYD1Y">https://youtu.be/VP0kfvRYD1Y</link>      
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href="https://github.com/nbatfai/RedFlowerHell">https://github.com/nbatfai/RedFlowerHell</link>               
+        </para>
+        <para>
+            Tanulságok, tapasztalatok, magyarázat... ezt kell az olvasónak kidolgoznia, mint labor- vagy otthoni mérési feladatot!
+            Ha mi már megtettük, akkor használd azt, dolgozd fel, javítsd, adj hozzá értéket!
+        </para>            
+    </section>              
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+</chapter>                

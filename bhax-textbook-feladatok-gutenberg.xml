@@ -1,0 +1,98 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Gutenberg!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+        <cover>
+            <para>
+                Programozás tankönyvek rövid olvasónaplói.
+            </para>
+        </cover>
+    </info>
+    <section>
+        <title>Programozási alapfogalmak</title>
+        <para>         
+            <citation>PICI</citation>       
+        </para>
+<para>Beveztő</para>
+	<para>
+A számítógépek programozására kialakult nyelveknek három szintjét különböztetjük meg: gépi nyelv, assembly szintő nyelv,magas szintő nyelv 
+A magas szintő nyelven megírt programot forrásprogramnak, vagy forrásszövegnek nevezzük. 
+Szintaktikai szabályok : hogy irjuk meg a programot úgy,hogy az lefusson és azt csinálja amit kell vagyis a forrásszöveg össueállitására vonatkozó nylevtani szabályok
+szemantikai szabályok : A tartalmi vagy jelentésbeli szabályok.
+ Egy magas szintő programozási nyelvet szintaktikai és szemantikai szabályainak
+együttese határoz meg.
+Minden processzor rendelkezik egy gépi nyelvvel ,csak azon tud kommunikálni, csak az azon nyelven megirt programokat képes futtatni.
+Ez azt eredményezi hogy az emberi nyelven megirt kódbol gépi kódot kell generálni, például fordito programmal ami a magas szintű nyelven megirt forráskódból gépi kódot generál a következő képpen :lexikális elemzés(lexikális egységekre darabolja a kódot) szintaktikai(ellenırzi, hogy teljesülnek-e az adott nyelv szintaktikai
+szabályai) majd szemantikai elemzés majd kódgenerálás.A futtatható programot a szerkesztő vagy kapcsolatszerkesztő állít elő,ezután a futtatható programot a betöltő helyezi el a tárban és adja át neki a vezérlést.
+Minden programnyelvnek megvan a saját szabványa, amit hivatkozási nyelvnek hívunk. Ebben pontosan definiálva vannak a szintaktikai és a szemantikai szabályok.
+ A hivatkozási nyelvek mellett  léteznek az implementációk(adott platformon realizált forditók vagy interpreterek).
+Napjainkban a programok írásához grafikus integrált fejlesztői környezetek  állnak rendelkezésünkre. Ezek tartalmaznak szövegszerkesztőt,
+fordítót , kapcsolatszerkesztıt, betöltıt, futtató rendszert és belövıt. 
+Programnzelvek osztályozása:Imperatív nyelvek(Szorosan kötıdnek a Neumann-architektúrához),deklaratív nyelvek,máselvő (egyéb) nyelvek.
+Az Imperativ nyelvekre jellemző.hogy algoritmikusak azaz a feladat utasitásokból áll , változókat használ,folyamatos lefutású, véges.
+A deklaratív nyelvek nem algoritmikusak, nincs lehetőség memóriműveletekre,emelett a programozó csak a problémát adja meg, az implementáció keresi a megoldást.
+Fontos megjegyzendő dolog , hogy valaki csak papiron/elméletben nem fog megtanulni progamozni, rengeteg gyakorlás szükséges.
+A forrásszöveg legkisebb alkotórészei a karakterek. Alapvető a karakterkészlet, ezekből állithatók össze a bonyolult nyelvi elemek.Az eljárásorientált
+nyelvek esetén ezek a következık: lexikális egységek, szintaktikai egységek, utasítások, programegységek, fordítási egységek, program.
+Minden nyelv definiálja a saját karakterkészletét,például : betűk, számok ,egyéb karakterek .Minden programnyelvben bető az angol ABC 26 nagybetője. A nyelvek továbbá bető
+kategóriájú karakternek tekintik gyakran az _ , $ , # , @ karaktereket is. Ez viszont sokszor implementációfüggő. 
+Egyéb karakterek közé tartoznak a  +, -, *, / műveletjelek, vagy a [, ],
+., :, {, }, ’, ", ; elhatárolójelek, vagy például c ben a többkarakteres szimbólumok :++, --,/*, */. 
+        </para>
+<para>Benedek Zoltán, Levendovszki Tihamér: Szoftverfejlesztés C++ nyelven</para>
+<para>Kezdetekben megismerhetjük a c++ nyelv rövid történetét,és kifejezésre kerül az is hogy a C++ a C re épül.
+A C++ viszont támogatja az objektumorientált és generikus programozást.
+ ezután nem sokkal összehasonlitásra kerül a C nyelvel,
+például a  C-ben nem szükséges paramétert megadnunk függvény létrehozásakor,ilyenkor Ez Int tipusu lesz.
+C++ ban ha paramétereket szeretnénk a main függvénybe, azt argc és arv[] vel tehetjük meg ,illetve itt nem kötelező a return 0; parancs használata, nem mint C ben.
+
+A bool tipus bevezetése is meg van emlitve,ez logikai(igaz-hamis)értékre utal ,viszont C ben még nem volt.
+változókat használat előtt deklarálni kell , változtatásokat utasitásban végezhetünk.</para>
+    </section>        
+    <section>
+        <title>Programozás bevezetés</title>
+        <para>                
+            <citation>KERNIGHANRITCHIE</citation>
+        </para>
+        <para>
+            Megoldás videó: <link xlink:href="https://youtu.be/zmfT9miB-jY">https://youtu.be/zmfT9miB-jY</link>
+        </para>   
+	<para>
+Ahhoz hogy elsajátitsunk egy uj programozási nyelvet csak egy út létezik.... programokat kell irnunk az adott nyelven,például a már sokak által jól ismert Hello World programot
+Képesnek kell lennünk egy program létrehozására, annak sikeres lefordítására, betöltésére, futtatására, és ki kell találnunk, hogy a kiírt szöveg hol jelenik meg,ha ezek megvannak az alap lépésekkel készen is vagyunk.
+A program futtatásának módja az általunk használt rendszertől függ.Például PL UNIX alatt a cc paracsal, természetesen az adott állomanynak melyben a program szerepel .c re kell végződnie.
+Egy C program MINDIG c  függvényekből és változókból áll,azaz azokat amelyeket megenged az adott nyelv pl jelen esetben a printf() függvény .A zárójelek egy adott utasitás után azt jelentik ,hogy az adott utasitás egy függvény.
+A #include stdio.h sor  éppen azt mondja meg a fordítóprogramnak, hogy a fordítás során a programba foglalja bele a standard bemeneti/kimeneti könyvtárra vonatkozó információkat.A függvények közti adatcsere egyik módszere, hogy a hívó függvény adatokból álló listát, az ún. argumentumokat adja át a hívott függvénynek. A függvény neve utáni () zárójelek ezt az argumentumlistát határolják.
+Igy hát a printf("Halló mindenki!\n"); utasitás a "" jelek  közötti szöveget a standard outputra irányitja.
+Az első programjainkat mindenképpen from scratch, azaz a nulláról irjuk,igy garantáltan elsajátitjuk a nyelv alapjait.
+A fejezet további részében az iró bemutat egy kicsivel komplexebb c programot ami a Celsius es Fahrenheit hőmérsékleteket táblazatos alakban iratja ki.
+továbbá megismerkedehtünk az int,float tipusokkal,emelett a while ciklus is részletes bemutatásra kerül.Ezután a for ciklus kerül részletesebb bemutatásra majd összehasonlitásra a while ciklussal.
+Később megismerkedhetünk a szimbolikus állandókkal is mint például a #define .
+Bamutatja a char adattipust ami karakterekre utal, megismerjük a getchar() függvénnyel.
+Későbbiekben az iro bemutatja a tömböket
+A C nyelvben a tömbök indexe mindig nullától indul, tehát ha n elemű a tömb, akkor n-1 lesz a legnagyobb index.
+Láthatjuk az IF utasitás ELSE ágát is ami akkor lép érvénybe ha az if ágban vett utasitas nem teljesül,ha nincs else águnk a program szimplán tovább lép.
+Bármikor létrhozhatunk egy nekünk megfelelő függvényt amit akkor használhatunk amikor szükség va rá,ezzel a programunk átláthatóbb lesz,egy számitást elég egyszer elvégezni.
+Itt szemléltetik pontosan egy függvény argumentumainak/paramétereinek szerepét és fontosságát,illetve egy függvény return utasitás által visszaadott visszatérési értékét.
+Ha egy függvényen belül deklarálunk valamit az csak abban a függvényben lesz érvényes,azaz azon kivul nem hasznalhato.
+Deklarálhatunk azonban globális változókat,melyeket a program bármely részén lehet használni,ezek deklaráláskor 0 értéket kapnak , ha csak a programozó nem ad más értéket.
+	</para>   
+    </section>        
+    <section>
+        <title>Programozás</title>
+        <para>                
+            <citation>BMECPP</citation>
+        </para>
+<para>Forstner Bertalan, Ekler Péter, Kelényi Imre: Bevezetés a mobilprogramozásba</para>
+
+<para>A python programozási nyelv alkalmas összetett alkalmazások elkészitésére ,ugyanis sokkal kompaktabb és egyszerűbb  mint a C, C++ vagy JAVA
+Nincs szükség forditásra,linkelésre  ezért is gyorsit a tipikus programirás/forditás/tesztelés/újraforditás cikluson. Nem kell külön változódeklarálás sem. A kódcsoportositás kicsit furcs lehet ugyanis itt nem találhatóak meg a szokásos {} vagy begin end csoportositók, és még ; sem kell az utasitások végére ,személyszerint kicsit furcsának tartottam eleimte , hogy azzal mondom meg hogy egy while vagy for cilusok mely utasitások tartoznak,hogy TAB ot rakok elé,ugyanakkor igy  100% hogy átláthatóbb a kód.
+ A nyelvben a változóknak nincsenek tipusai, akár több tipusú objektumra is hivatkozhatnak.
+Igy azt sem kell definiálnunk hogy egy változó lebegőpontos értéket tárol e  hanem egyszerűen példával élve a = 3.0.
+Ittis definálhatók globális illetve lokális változók, alapból lokális változónak vannak deklarálva, viszont például: global a globális változónak lesz definiálva.
+Érdekesebb dolgok közé tartozik az elif is, ami a következő módon működik : egy if ()else if()else kiompaktabban van leirva IF: ELIF: else,igy rovidithetünk a kódon,és átláthatóbbá tehetjük.
+A függvényeket sem kell túlkomplikálni, elég a def függvény():.   </para>
+    </section>        
+</chapter>                
